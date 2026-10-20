@@ -17,31 +17,92 @@ class Tracker:
         conn.commit()
         conn.close()
 
-    def remove_expense(self, expense):
-        if expense in self.expenses:
-            self.expenses.remove(expense)
+    def remove_expense(self, expense_id, user_id):
+        conn = create_connection()
+        cursor = conn.cursor()
+        cursor.execute(
+            "DELETE FROM expenses WHERE id = ? AND user_id = ?",
+            (expense_id, user_id)
+        )
+        conn.commit()
+        deleted_count = cursor.rowcount
+        conn.close()
+        return deleted_count > 0
 
-    def summarise_by_category(self):
-        categories = {
-            expense.category
-            for expense in self.expenses
-        }
-        summary = {
-            category: sum(
-                expense.amount
-                for expense in self.expenses
-                if expense.category == category
-            )
-            for category in categories
-        }
-        return summary
+    def summarise_by_category(self, user_id):
+        conn = create_connection()
+        cursor = conn.cursor()
+        cursor.execute(
+            """
+            SELECT category, SUM(amount)AS total 
+            FROM expenses 
+            WHERE user_id = ? 
+            GROUP BY category
+            ORDER BY total DESC
+            """,
+            (user_id,)
+        )
+        rows = cursor.fetchall()
+        conn.close()
+        return {row["category"]: row["total"] for row in rows}
 
-    def add_habit(self, habit):
-        self.habits.append(habit)
+    def add_habit(self, user_id, habit):
+        conn =  create_connection()
 
-    def remove_habit(self, habit):
-        if habit in self.habits:
-            self.habits.remove(habit)
+        conn.execute("""
+        INSERT INTO habits (user_id, name, date, completed)
+          VALUES (?, ?, ?, ?)
+        """, (user_id, habit.name, habit.date, habit.completed))
+        conn.commit()
+        conn.close()
+
+
+    def get_habits(self, user_id):
+        conn = create_connection()
+        cursor = conn.cursor()
+        rows = cursor.execute("""
+            SELECT id, name, date, completed FROM habits
+            WHERE user_id = ?
+            ORDER BY date DESC
+        """, (user_id,)).fetchall()
+        conn.close()
+        return [
+            {
+                "id": row["id"],
+                "name": row["name"],
+                "date": row["date"],
+                "completed": bool(row["completed"])
+            }
+            for row in rows
+        ]
+    
+
+    def mark_habit_completed(self, habit_id, user_id):
+        conn = create_connection()
+
+        cursor = conn.execute("""
+            UPDATE habits
+            SET completed = 1
+            WHERE id = ? AND user_id = ?
+        """, (habit_id, user_id))
+        conn.commit()
+        updated = cursor.rowcount
+        conn.close()
+        return updated > 0
+
+
+
+    def remove_habit(self, habit_id, user_id):
+        conn = create_connection()
+        cursor = conn.cursor()
+        cursor.execute("""
+            DELETE FROM habits
+            WHERE id = ? AND user_id = ?
+        """, (habit_id, user_id))
+        conn.commit()
+        deleted_count = cursor.rowcount
+        conn.close()
+        return deleted_count > 0
 
 if __name__ == "__main__":
     from models import Expense
@@ -52,6 +113,7 @@ if __name__ == "__main__":
         user_id=1,
         expense=expense
     )
+
     
     print(tracker.expenses)
-    print(tracker.summarise_by_category())
+    print(tracker.summarise_by_category(user_id=1))
