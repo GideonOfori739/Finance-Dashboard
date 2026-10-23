@@ -7,6 +7,37 @@ class Tracker:
         self.expenses = []
         self.habits = []
 
+    
+    def get_expenses(self, user_id):
+        conn = create_connection()
+
+        rows = conn.execute(
+            """
+            SELECT amount, category, description, date
+            FROM expenses
+            WHERE user_id = ?
+            ORDER BY date DESC
+            """,
+            (user_id,)
+        ).fetchall()
+
+        conn.close()
+
+        expenses = []
+
+        for row in rows:
+            expense = Expense(
+                amount=row["amount"],
+                category=row["category"],
+                description=row["description"],
+                date=row["date"]
+            )
+            expenses.append(expense)
+
+        return expenses
+
+
+
     def add_expense(self, user_id, expense):
         conn = create_connection()
         cursor = conn.cursor()
