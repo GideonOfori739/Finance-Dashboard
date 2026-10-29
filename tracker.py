@@ -13,10 +13,10 @@ class Tracker:
 
         rows = conn.execute(
             """
-            SELECT amount, category, description, date
+            SELECT id, amount, category, description, date
             FROM expenses
             WHERE user_id = ?
-            ORDER BY date DESC
+            ORDER BY date DESC, id DESC
             """,
             (user_id,)
         ).fetchall()
@@ -27,6 +27,7 @@ class Tracker:
 
         for row in rows:
             expense = Expense(
+                id=row["id"],
                 amount=row["amount"],
                 category=row["category"],
                 description=row["description"],
