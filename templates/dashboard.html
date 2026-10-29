@@ -98,6 +98,25 @@
 {% endif %}
 
 
+
+<hr>
+<h2>Weekly Spending Summary</h2>
+
+{% if weekly_summary %}
+    <ul>
+        {% for week, amount in weekly_summary.items() %}
+            <li>
+                {{ week }}:
+                {{ "%.2f"|format(amount) }} GHS
+            </li>
+        {% endfor %}
+    </ul>
+{% else %}
+    <p>No spending data available yet.</p>
+{% endif %}
+
+
+
 <hr>
 
 <h2>My Habits</h2>
