@@ -7,7 +7,11 @@ from database import create_connection, create_table
 from tracker import Tracker
 from models import Expense, Habit
 from analytics import category_totals, weekly_spending, create_category_chart
-
+from habit_analytics import calculate_streak
+from habit_analytics import (
+    calculate_streak,
+    weekly_habit_report
+)
 
 
 tracker = Tracker()
@@ -116,8 +120,28 @@ def dashboard():
     expenses = tracker.get_expenses(user_id)
     summary = tracker.summarise_by_category(user_id)
     habits = tracker.get_habits(user_id)
+    weekly_habits = weekly_habit_report(habits)
+    habit_streaks = {}
+
+    for habit in habits:
+        name = habit["name"]
+        if name not in habit_streaks:
+            habit_streaks[name] = calculate_streak(
+            habits, name
+        )
+    weekly_habits = weekly_habit_report(habits)
     weekly_summary = weekly_spending(expenses)
-    total_expenses = sum(expense.amount for expense in expenses)
+    total_spending = sum(expense.amount for expense in expenses)
+    total_expenses = len(expenses)
+    total_habits = len(habits)
+
+    completed_habits = sum(
+        1 for habit in habits if habit ["completed"]
+    )
+    completion_rate = (
+        (completed_habits/ total_habits) * 100
+        if total_habits > 0 else 0
+    )
     create_category_chart(expenses)
     return render_template(
             "dashboard.html",
@@ -125,8 +149,14 @@ def dashboard():
             expenses=expenses,
             summary=summary,
             weekly_summary = weekly_summary,
+            total_spending=total_spending,
             total_expenses=total_expenses,
-            habits = habits
+            habits = habits,
+            habit_streaks=habit_streaks,
+            weekly_habits = weekly_habits,
+            total_habits=total_habits,
+            completed_habits=completed_habits,
+            completion_rate=round(completion_rate, 1),
               )
             
         

@@ -1,0 +1,15 @@
+
+__pycache__/
+*.py[cod]
+
+.pytest_cache/
+.venv/
+venv/
+
+finance.db
+*.db
+
+.env
+*.log
+
+static/category_chart.png
