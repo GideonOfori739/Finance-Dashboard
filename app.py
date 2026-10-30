@@ -6,7 +6,7 @@ from werkzeug.security import generate_password_hash, check_password_hash
 from database import create_connection, create_table
 from tracker import Tracker
 from models import Expense, Habit
-from analytics import category_totals, weekly_spending
+from analytics import category_totals, weekly_spending, create_category_chart
 
 
 
@@ -118,6 +118,7 @@ def dashboard():
     habits = tracker.get_habits(user_id)
     weekly_summary = weekly_spending(expenses)
     total_expenses = sum(expense.amount for expense in expenses)
+    create_category_chart(expenses)
     return render_template(
             "dashboard.html",
             username=session["username"],

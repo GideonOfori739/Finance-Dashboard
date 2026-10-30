@@ -119,6 +119,22 @@
 
 <hr>
 
+<h2>Spending Chart</h2>
+
+{% if summary %}
+    <img
+        src="{{ url_for('static', filename='category_chart.png') }}?v={{ total_spending }}"
+        alt="Bar chart showing spending by category"
+        style="max-width: 100%; height: auto;"
+    >
+{% else %}
+    <p>Add an expense to see your spending chart.</p>
+{% endif %}
+
+
+
+<hr>
+
 <h2>My Habits</h2>
 
 <form action="{{ url_for('add_habit') }}" method="POST">
