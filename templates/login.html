@@ -4,32 +4,67 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>Login</title>
+    <title>Login | Finance Dashboard</title>
+
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
 </head>
-<body>
-    <h1>Log in</h1>
 
-    {% with messages = get_flashed_messages(with_categories=true) %}
-        {% for category, message in messages %}
-            <p>{{ message }}</p>
-        {% endfor %}
-    {% endwith %}
+<body class="auth-page">
 
-    <form method="POST">
-        <label for="username">Username</label>
-        <input id="username" name="username"
-               required autocomplete="username">
+    <div class="auth-container">
 
-        <label for="password">Password</label>
-        <input id="password" name="password"
-               type="password" required
-               autocomplete="current-password">
+        <div class="auth-brand">
+            <div class="brand-icon">₵</div>
+            <h1>Finance<span>Flow</span></h1>
+            <p>Manage your money. Build better habits.</p>
+        </div>
 
-        <button type="submit">Log in</button>
-    </form>
+        <div class="auth-card">
+            <h2>Welcome back</h2>
+            <p class="auth-description">Log in to access your dashboard.</p>
 
-    <p>Don't have an account?
-        <a href="{{ url_for('register') }}">Register</a>
-    </p>
+            {% with messages = get_flashed_messages(with_categories=true) %}
+                {% for category, message in messages %}
+                    <p class="flash-message">{{ message }}</p>
+                {% endfor %}
+            {% endwith %}
+
+            <form method="POST" class="auth-form">
+                <div>
+                    <label for="username">Username</label>
+                    <input
+                        id="username"
+                        name="username"
+                        placeholder="Enter your username"
+                        required
+                        autocomplete="username"
+                    >
+                </div>
+
+                <div>
+                    <label for="password">Password</label>
+                    <input
+                        id="password"
+                        name="password"
+                        type="password"
+                        placeholder="Enter your password"
+                        required
+                        autocomplete="current-password"
+                    >
+                </div>
+
+                <button type="submit">Log in</button>
+            </form>
+
+            <p class="auth-footer">
+                Don't have an account?
+                <a href="{{ url_for('register') }}">Create one</a>
+            </p>
+        </div>
+
+        <p class="auth-copyright">Personal Finance & Habit Dashboard</p>
+
+    </div>
+
 </body>
 </html>

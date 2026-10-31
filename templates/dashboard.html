@@ -1,276 +1,253 @@
 
 <!DOCTYPE html>
 <html lang="en">
-<link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>Finance Dashboard</title>
-</head>
-<body>
-    <h1>Welcome, {{ username }}!</h1>
 
-    
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+
+<body>
+<div class="dashboard-container">
+
+    <header class="dashboard-header">
+
+        <div>
+            <p class="eyebrow">PERSONAL FINANCE & HABITS</p>
+            <h1>Welcome, {{ username }}!</h1>
+            <p>Here's an overview of your finances and daily progress.</p>
+        </div>
+
+        <form action="{{ url_for('logout') }}" method="POST">
+            <button type="submit" class="logout-btn">Log out</button>
+        </form>
+    </header>
+
+    <nav class="dashboard-nav">
+        <a href="#add-expense">Add Expense</a>
+        <a href="#expense-history">Expenses</a>
+        <a href="#weekly-spending">Spending</a>
+        <a href="#spending-chart">Charts</a>
+        <a href="#habits">Habits</a>
+        <a href="#habit-report">Reports</a>
+    </nav>
+
+    {% with messages = get_flashed_messages(with_categories=true) %}
+        {% for category, message in messages %}
+            <p class="flash-message">{{ message }}</p>
+        {% endfor %}
+    {% endwith %}
+
     <section class="overview">
         <div class="stat-card">
-            <h3>Total Spending</h3>
+            <h3>💰 Total Spending</h3>
             <p>GHS {{ "%.2f"|format(total_spending) }}</p>
         </div>
 
         <div class="stat-card">
-            <h3>Total Expenses</h3>
+            <h3>🧾 Total Expenses</h3>
             <p>{{ total_expenses }}</p>
         </div>
 
         <div class="stat-card">
-            <h3>Total Habits</h3>
+            <h3>🎯 Total Habits</h3>
             <p>{{ total_habits }}</p>
         </div>
 
         <div class="stat-card">
-            <h3>Habit Completion</h3>
+            <h3>📈 Habit Completion</h3>
             <p>{{ completion_rate }}%</p>
         </div>
     </section>
 
+    <section class="section" id="add-expense">
+        <h2>Add an Expense</h2>
 
-    {% with messages = get_flashed_messages(with_categories=true) %}
-        {% for category, message in messages %}
-            <p>{{ message }}</p>
-        {% endfor %}
-    {% endwith %}
-
-    <h2>Add an expense</h2>
-
-    <form action="{{ url_for('add_expense') }}" method="POST">
-        <div>
-            <label for="amount">Amount (GH₵)</label>
-            <input
-                id="amount"
-                name="amount"
-                type="number"
-                min="0.01"
-                step="0.01"
-                required
-            >
-        </div>
-
-        <div>
-            <label for="category">Category</label>
-            <select id="category" name="category" required>
-                <option value="">Choose a category</option>
-                <option value="Food">Food</option>
-                <option value="Transport">Transport</option>
-                <option value="Bills">Bills</option>
-                <option value="Education">Education</option>
-                <option value="Entertainment">Entertainment</option>
-                <option value="Other">Other</option>
-            </select>
-        </div>
-
-        <div>
-            <label for="description">Description</label>
-            <input
-                id="description"
-                name="description"
-                type="text"
-                maxlength="200"
-            >
-        </div>
-
-        <div>
-            <label for="date">Date</label>
-            <input
-                id="date"
-                name="date"
-                type="date"
-                required
-            >
-        </div>
-
-        <button type="submit">Save expense</button>
-    </form>
-
-    <h2>Spending summary</h2>
-    <p>Total spending: GH₵{{ "%.2f"|format(total_expenses) }}</p>
-
-    
-    {% if expenses %}
-        <ul>
-            {% for expense in expenses %}
-                <li>
-                    {{ expense.date }} —
-                    {{ expense.category }} —
-                    GH₵{{ "%.2f"|format(expense.amount) }}
-
-                    {% if expense.description %}
-                        — {{ expense.description }}
-                    {% endif %}
-
-                    <form
-                        action="{{ url_for('delete_expense', expense_id=expense.id) }}"
-                        method="POST"
-                        style="display: inline;"
-                        onsubmit="return confirm('Delete this expense?');"
-                    >
-                        <button type="submit">Delete</button>
-                    </form>
-                </li>
-            {% endfor %}
-        </ul>
-    {% else %}
-        <p>You haven't added any expenses yet.</p>
-    {% endif %}
-
-
-
-    <hr>
-    <h2>Weekly Spending Summary</h2>
-
-    {% if weekly_summary %}
-        <ul>
-            {% for week, amount in weekly_summary.items() %}
-                <li>
-                    {{ week }}:
-                    {{ "%.2f"|format(amount) }} GHS
-                </li>
-            {% endfor %}
-        </ul>
-    {% else %}
-        <p>No spending data available yet.</p>
-    {% endif %}
-
-
-
-    <hr>
-
-    <h2>Spending Chart</h2>
-
-    {% if summary %}
-        <img
-            src="{{ url_for('static', filename='category_chart.png') }}?v={{ total_spending }}"
-            alt="Bar chart showing spending by category"
-            style="max-width: 100%; height: auto;"
-        >
-    {% else %}
-        <p>Add an expense to see your spending chart.</p>
-    {% endif %}
-
-
-
-    <hr>
-
-    <h2>My Habits</h2>
-
-    <form action="{{ url_for('add_habit') }}" method="POST">
-        <div>
-            <label for="habit-name">Habit name</label>
-            <input
-                id="habit-name"
-                name="name"
-                type="text"
-                maxlength="100"
-                placeholder="e.g. Study Python"
-                required
-            >
-        </div>
-
-        <div>
-            <label for="habit-date">Date</label>
-            <input
-                id="habit-date"
-                name="date"
-                type="date"
-                required
-            >
-        </div>
-
-        <button type="submit">Add habit</button>
-    </form>
-
-    <h3>Your habits</h3>
-
-    {% if habits %}
-        <ul>
-            {% for habit in habits %}
-                <li>
-                    <strong>{{ habit.name }}</strong>
-                    — {{ habit.date }}
-
-                    <span>
-                        🔥 {{ habit_streaks[habit.name] }} day streak
-                    </span>
-
-                    {% if habit.completed %}
-                        <span>Completed ✓</span>
-                    {% else %}
-                        <form
-                            action="{{ url_for('complete_habit', habit_id=habit.id) }}"
-                            method="POST"
-                            style="display: inline;"
-                        >
-                            <button type="submit">
-                                Mark complete
-                            </button>
-                        </form>
-                    {% endif %}
-
-                    <form
-                        action="{{ url_for('delete_habit', habit_id=habit.id) }}"
-                        method="POST"
-                        style="display: inline;"
-                        onsubmit="return confirm('Delete this habit?');"
-                    >
-                        <button type="submit">Delete</button>
-                    </form>
-                </li>
-            {% endfor %}
-        </ul>
-    {% else %}
-        <p>No habits yet. Add your first habit above!</p>
-    {% endif %}
-
-
-    <hr>
-
-    <h2>Weekly Habit Report</h2>
-
-    {% if weekly_habits %}
-        {% for week, report in weekly_habits.items() %}
+        <form class="expense-form" action="{{ url_for('add_expense') }}" method="POST">
             <div>
-                <h3>Week: {{ week }}</h3>
-
-                <p>
-                    Total habits:
-                    {{ report.total_habits }}
-                </p>
-
-                <p>
-                    Completed:
-                    {{ report.completed_habits }}
-                </p>
-
-                <p>
-                    Completion rate:
-                    {{ report.completion_rate }}%
-                </p>
-
-                <progress
-                    value="{{ report.completion_rate }}"
-                    max="100">
-                </progress>
+                <label for="amount">Amount (GH₵)</label>
+                <input id="amount" name="amount" type="number"
+                       min="0.01" step="0.01" required>
             </div>
-            <hr>
-        {% endfor %}
-    {% else %}
-        <p>No habit records available yet.</p>
-    {% endif %}
+
+            <div>
+                <label for="category">Category</label>
+                <select id="category" name="category" required>
+                    <option value="">Choose a category</option>
+                    <option value="Food">Food</option>
+                    <option value="Transport">Transport</option>
+                    <option value="Bills">Bills</option>
+                    <option value="Education">Education</option>
+                    <option value="Entertainment">Entertainment</option>
+                    <option value="Other">Other</option>
+                </select>
+            </div>
+
+            <div>
+                <label for="description">Description</label>
+                <input id="description" name="description"
+                       type="text" maxlength="200">
+            </div>
+
+            <div>
+                <label for="date">Date</label>
+                <input id="date" name="date" type="date" required>
+            </div>
+
+            <button type="submit">Save Expense</button>
+        </form>
+    </section>
+
+    <section class="section" id="expense-history">
+        <h2>Expense History</h2>
+        <p class="section-description">Your recorded transactions.</p>
+
+        {% if expenses %}
+            <ul class="data-list">
+                {% for expense in expenses %}
+                    <li>
+                        <div>
+                            <strong>{{ expense.category }}</strong>
+                            <p>{{ expense.date }} — {{ expense.description }}</p>
+                        </div>
+
+                        <div class="item-actions">
+                            <strong>GH₵{{ "%.2f"|format(expense.amount) }}</strong>
+
+                            <form action="{{ url_for('delete_expense', expense_id=expense.id) }}"
+                                  method="POST"
+                                  onsubmit="return confirm('Delete this expense?');">
+                                <button type="submit" class="delete-btn">Delete</button>
+                            </form>
+                        </div>
+                    </li>
+                {% endfor %}
+            </ul>
+        {% else %}
+            <p>You haven't added any expenses yet.</p>
+        {% endif %}
+    </section>
+
+    <div class="analytics-grid">
+        <section class="section" id="weekly-spending">
+        <h2>Weekly Spending Summary</h2>
+
+        <!-- Keep your existing weekly summary code here -->
+        </section>
+
+        <section class="section" id="spending-chart">
+            <h2>Spending Chart</h2>
+
+            <!-- Keep your existing spending chart code here -->
+        </section>
+    </div>
 
 
+    <section class="section">
+        <h2>Weekly Spending Summary</h2>
 
+        {% if weekly_summary %}
+            <ul class="data-list">
+                {% for week, amount in weekly_summary.items() %}
+                    <li>
+                        <span>{{ week }}</span>
+                        <strong>GH₵{{ "%.2f"|format(amount) }}</strong>
+                    </li>
+                {% endfor %}
+            </ul>
+        {% else %}
+            <p>No spending data available yet.</p>
+        {% endif %}
+    </section>
 
-    <form action="{{ url_for('logout') }}" method="POST">
-        <button type="submit">Log out</button>
-    </form>
+    <section class="section">
+        <h2>Spending Chart</h2>
+
+        {% if summary %}
+            <img class="spending-chart"
+                 src="{{ url_for('static', filename='category_chart.png') }}?v={{ total_spending }}"
+                 alt="Bar chart showing spending by category">
+        {% else %}
+            <p>Add an expense to see your spending chart.</p>
+        {% endif %}
+    </section>
+
+    <section class="section" id="habits">
+        <h2>My Habits</h2>
+
+        <form class="habit-form" action="{{ url_for('add_habit') }}" method="POST">
+            <div>
+                <label for="habit-name">Habit name</label>
+                <input id="habit-name" name="name" type="text"
+                       maxlength="100" placeholder="e.g. Study Python" required>
+            </div>
+
+            <div>
+                <label for="habit-date">Date</label>
+                <input id="habit-date" name="date" type="date" required>
+            </div>
+
+            <button type="submit">Add Habit</button>
+        </form>
+
+        <h3>Your Habits</h3>
+
+        {% if habits %}
+            <ul class="data-list">
+                {% for habit in habits %}
+                    <li>
+                        <div>
+                            <strong>{{ habit.name }}</strong>
+                            <p>{{ habit.date }}</p>
+                            <span class="streak">🔥 {{ habit_streaks[habit.name] }} day streak</span>
+                        </div>
+
+                        <div class="item-actions">
+                            {% if habit.completed %}
+                                <span class="completed">Completed ✓</span>
+                            {% else %}
+                                <form action="{{ url_for('complete_habit', habit_id=habit.id) }}"
+                                      method="POST">
+                                    <button type="submit">Mark Complete</button>
+                                </form>
+                            {% endif %}
+
+                            <form action="{{ url_for('delete_habit', habit_id=habit.id) }}"
+                                  method="POST"
+                                  onsubmit="return confirm('Delete this habit?');">
+                                <button type="submit" class="delete-btn">Delete</button>
+                            </form>
+                        </div>
+                    </li>
+                {% endfor %}
+            </ul>
+        {% else %}
+            <p>No habits yet. Add your first habit above!</p>
+        {% endif %}
+    </section>
+
+    <section class="section" id="habit-report">
+        <h2>Weekly Habit Report</h2>
+
+        {% if weekly_habits %}
+            {% for week, report in weekly_habits.items() %}
+                <div class="report-item">
+                    <h3>Week: {{ week }}</h3>
+
+                    <p>Total habits: {{ report.total_habits }}</p>
+                    <p>Completed: {{ report.completed_habits }}</p>
+                    <p>Completion rate: {{ report.completion_rate }}%</p>
+
+                    <progress value="{{ report.completion_rate }}" max="100"></progress>
+                </div>
+            {% endfor %}
+        {% else %}
+            <p>No habit records available yet.</p>
+        {% endif %}
+    </section>
+
+</div>
 </body>
 </html>
