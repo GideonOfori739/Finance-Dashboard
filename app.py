@@ -21,6 +21,10 @@ app = Flask(__name__)
 app.config["SECRET_KEY"] = os.environ.get(
     "SECRET_KEY", "your_secret_key"
 )
+
+if not app.config["SECRET_KEY"]:
+    raise RuntimeError("SECRET_KEY environment variable is not set")
+
 create_table()
 
 
@@ -271,4 +275,4 @@ def delete_habit(habit_id):
     return redirect(url_for("dashboard"))
 
 if __name__ == "__main__":
-    app.run(debug=True)
+    app.run(debug=False)
