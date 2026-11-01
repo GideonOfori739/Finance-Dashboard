@@ -1,9 +1,10 @@
 import os
 import sqlite3
+import psycopg
 from functools import wraps
 from flask import Flask, render_template, request, redirect, url_for, session, flash
 from werkzeug.security import generate_password_hash, check_password_hash
-from database import create_connection, create_table
+from database import create_connection, create_table, DATABASE_URL
 from tracker import Tracker
 from models import Expense, Habit
 from analytics import category_totals, weekly_spending, create_category_chart
@@ -13,6 +14,7 @@ from habit_analytics import (
     weekly_habit_report
 )
 
+PLACEHOLDER = "%s" if DATABASE_URL else "?"
 
 tracker = Tracker()
 
@@ -63,13 +65,14 @@ def register():
         conn = create_connection()
         try:
             conn.execute(
-                "INSERT INTO users (username, password) VALUES (?, ?)",
+                f"INSERT INTO users (username, password) VALUES ({PLACEHOLDER}, {PLACEHOLDER})",
                 (username, hashed_password)
             )
             conn.commit()
-        except sqlite3.IntegrityError:
-            flash("Username already exists. Please choose a different one.", "error")
-            return render_template("register.html")
+
+        except (sqlite3.IntegrityError, psycopg.errors.UniqueViolation):
+                flash("Username already exists. Please choose a different one.", "error")
+                return render_template("register.html")
         finally:
             conn.close()
 
@@ -90,7 +93,7 @@ def login():
 
         conn = create_connection()
         user = conn.execute(
-            "SELECT id,username,password FROM users WHERE username = ?",
+            f"SELECT id,username,password FROM users WHERE username = {PLACEHOLDER}",
             (username,)
         ).fetchone()
         conn.close()
